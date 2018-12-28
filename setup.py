@@ -14,7 +14,8 @@ setup(
     license='MIT',
 
     install_requires=[
-        'cstruct'
+        'cstruct',
+        'python-lzo'
     ],
     packages=['jefferson'],
     package_dir={'jefferson': 'src/jefferson'},
