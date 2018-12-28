@@ -396,7 +396,7 @@ def dump_fs(fs, target):
         for pnode in pnodes:
             node_names.append(pnode.name)
         node_names.append(dirent.name)
-        path = '/'.join(node_names)
+        path = b'/'.join(node_names)
 
         target_path = os.path.join(os.getcwd(), target, path)
         for inode in dirent.inodes:
