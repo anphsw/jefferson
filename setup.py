@@ -3,17 +3,19 @@
 
 from distutils.core import setup
 
-version = '0.2'
+version = '0.3'
 
 setup(
     name='jefferson',
     version=version,
-    description='',
+    description='JFFS2 filesystem extraction tool',
     author='Stefan Viehböck',
-    url='https://github.com/sviehb/jefferson',
+    url='https://github.com/makefu/jefferson',
     license='MIT',
 
-    requires=['cstruct'],
+    install_requires=[
+        'cstruct'
+    ],
     packages=['jefferson'],
     package_dir={'jefferson': 'src/jefferson'},
     scripts=['src/scripts/jefferson'],

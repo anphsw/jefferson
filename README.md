@@ -1,21 +1,10 @@
 # jefferson
-JFFS2 filesystem extraction tool
+JFFS2 filesystem extraction tool (py3k fork)
 
 Installation
 ============
 ```bash
-$ sudo python setup.py install
-```
-
-
-Dependencies
-============
-- `cstruct`
-- `pyliblzma`
-
-```bash
-$ sudo pip install cstruct
-$ sudo apt-get install python-lzma
+$ python setup.py install
 ```
 
 Features
