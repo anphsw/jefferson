@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-from distutils.core import setup
+import setuptools
 
 version = '0.3'
 
-setup(
+setuptools.setup(
     name='jefferson',
     version=version,
     description='JFFS2 filesystem extraction tool',
@@ -20,4 +20,9 @@ setup(
     packages=['jefferson'],
     package_dir={'jefferson': 'src/jefferson'},
     scripts=['src/scripts/jefferson'],
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+    ],
 )
