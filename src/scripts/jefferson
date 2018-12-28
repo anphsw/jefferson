@@ -397,8 +397,7 @@ def dump_fs(fs, target):
             node_names.append(pnode.name)
         node_names.append(dirent.name)
         path = b'/'.join(node_names)
-
-        target_path = os.path.join(os.getcwd(), target, path)
+        target_path = os.path.join(os.getcwd().encode(), target.encode(), path)
         for inode in dirent.inodes:
             try:
                 if stat.S_ISDIR(inode.mode):
