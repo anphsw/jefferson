@@ -6,6 +6,15 @@ Installation
 ```bash
 $ python setup.py install
 ```
+### Nix
+Develop with the Nix package manager:
+```bash
+nix-shell
+```
+Build with nix:
+```bash
+nix build
+```
 
 Features
 ============
@@ -20,3 +29,7 @@ Usage
 ```bash
 $ jefferson filesystem.img -d outdir
 ```
+
+
+Upgrade
+===========
