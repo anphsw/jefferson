@@ -11,6 +11,17 @@ import cstruct
 
 from jefferson import jffs2_lzma, rtime
 
+stat_compr_none = 0
+stat_compr_zero = 0
+stat_compr_zlib = 0
+stat_compr_rtime = 0
+stat_compr_lzma = 0
+stat_compr_lzo = 0
+stat_compr_notimpl = 0
+stat_mismatch_len = 0
+stat_mismatch_hdrcrc = 0
+stat_mismatch_datacrc = 0
+stat_mismatch_nodecrc = 0
 
 def PAD(x):
     return (((x) + 3) & ~3)
@@ -148,6 +159,10 @@ class Jffs2_raw_dirent(cstruct.CStruct):
 
     def unpack(self, data, node_offset):
         cstruct.CStruct.unpack(self, data[:self.size])
+
+        global stat_mismatch_nodecrc
+        global stat_mismatch_datacrc
+
         self.name = data[self.size:self.size + self.nsize]
         self.node_offset = node_offset
 
@@ -156,12 +171,14 @@ class Jffs2_raw_dirent(cstruct.CStruct):
         else:
             print('node_crc does not match!')
             self.node_crc_match = False
+            stat_mismatch_nodecrc += 1
 
         if mtd_crc(self.name) == self.name_crc:
             self.name_crc_match = True
         else:
             print('data_crc does not match!')
             self.name_crc_match = False
+            stat_mismatch_datacrc += 1
 
     def __str__(self):
         result = []
@@ -200,38 +217,60 @@ class Jffs2_raw_inode(cstruct.CStruct):
     def unpack(self, data):
         cstruct.CStruct.unpack(self, data[:self.size])
 
+        global stat_compr_none
+        global stat_compr_zero
+        global stat_compr_zlib
+        global stat_compr_rtime
+        global stat_compr_lzma
+        global stat_compr_lzo
+        global stat_compr_notimpl
+        global stat_mismatch_hdrcrc
+        global stat_mismatch_datacrc
+        global stat_mismatch_len
+
         node_data = data[self.size:self.size + self.csize]
+
         if self.compr == JFFS2_COMPR_NONE:
             self.data = node_data
+            stat_compr_none += 1
         elif self.compr == JFFS2_COMPR_ZERO:
             self.data = '\x00' * self.dsize
+            stat_compr_zero += 1
         elif self.compr == JFFS2_COMPR_ZLIB:
             self.data = zlib.decompress(node_data)
+            stat_compr_zlib += 1
         elif self.compr == JFFS2_COMPR_RTIME:
             self.data = rtime.decompress(node_data, self.dsize)
+            stat_compr_rtime += 1
         elif self.compr == JFFS2_COMPR_LZMA:
             self.data = jffs2_lzma.decompress(node_data, self.dsize)
+            stat_compr_lzma += 1
         elif self.compr == JFFS2_COMPR_LZO:
             self.data = lzo.decompress(node_data, False, self.dsize)
+            stat_compr_lzo += 1
         else:
             print('compression not implemented', self)
             print(node_data.encode('hex')[:20])
             self.data = node_data
+            stat_compr_notimpl += 1
 
         if len(self.data) != self.dsize:
             print('data length mismatch!')
+            stat_mismatch_len += 1
 
         if mtd_crc(data[:self.size - 8]) == self.node_crc:
             self.node_crc_match = True
         else:
             print('hdr_crc does not match!')
             self.node_crc_match = False
+            stat_mismatch_hdrcrc += 1
 
         if mtd_crc(node_data) == self.data_crc:
             self.data_crc_match = True
         else:
             print('data_crc does not match!')
             self.data_crc_match = False
+            stat_mismatch_datacrc += 1
 
 class Jffs2_device_node_old(cstruct.CStruct):
     __byte_order__ = cstruct.LITTLE_ENDIAN
@@ -448,6 +487,18 @@ def dump_fs(fs, target):
 def main():
     import argparse
 
+    global stat_compr_none
+    global stat_compr_zero
+    global stat_compr_zlib
+    global stat_compr_rtime
+    global stat_compr_lzma
+    global stat_compr_lzo
+    global stat_compr_notimpl
+    global stat_mismatch_len
+    global stat_mismatch_hdrcrc
+    global stat_mismatch_datacrc
+    global stat_mismatch_nodecrc
+
     parser = argparse.ArgumentParser()
     parser.add_argument('-v', '--verbose', help='increase output verbosity',
                         action="store_true")
@@ -495,6 +546,20 @@ def main():
         dump_fs(fs, dest_path_fs)
         print('-' * 10)
         fs_index += 1
+
+    if args.verbose:
+        print ('Node statistics:')
+        print ('COMPR_NONE:     ' + str(stat_compr_none))
+        print ('COMPR_ZERO:     ' + str(stat_compr_zero))
+        print ('COMPR_ZLIB:     ' + str(stat_compr_zlib))
+        print ('COMPR_RTIME:    ' + str(stat_compr_rtime))
+        print ('COMPR_LZMA:     ' + str(stat_compr_lzma))
+        print ('COMPR_LZO:      ' + str(stat_compr_lzo))
+        print ('COMPR_NOTIMPL:  ' + str(stat_compr_notimpl))
+        print ('Length mismatch:' + str(stat_mismatch_len))
+        print ('HDR CRC error:  ' + str(stat_mismatch_hdrcrc))
+        print ('DATA CRC error: ' + str(stat_mismatch_datacrc))
+        print ('NODE CRC error: ' + str(stat_mismatch_nodecrc))
 
 if __name__ == '__main__':
     main()

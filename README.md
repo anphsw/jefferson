@@ -23,6 +23,7 @@ Features
 - CRC checks - for now only enforced on `hdr_crc`
 - Extraction of symlinks, directories, files, and device nodes
 - Detection/handling of duplicate inode numbers. Occurs if multiple JFFS2 filesystems are found in one file and causes `jefferson` to treat segments as separate filesystems
+- Summary staticstics on used compressors and errors (with verbose flag)
 
 Usage
 ============
