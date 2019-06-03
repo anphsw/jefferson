@@ -18,6 +18,7 @@ stat_compr_rtime = 0
 stat_compr_lzma = 0
 stat_compr_lzo = 0
 stat_compr_notimpl = 0
+stat_compr_error = 0
 stat_mismatch_len = 0
 stat_mismatch_hdrcrc = 0
 stat_mismatch_datacrc = 0
@@ -224,6 +225,7 @@ class Jffs2_raw_inode(cstruct.CStruct):
         global stat_compr_lzma
         global stat_compr_lzo
         global stat_compr_notimpl
+        global stat_compr_error
         global stat_mismatch_hdrcrc
         global stat_mismatch_datacrc
         global stat_mismatch_len
@@ -237,17 +239,37 @@ class Jffs2_raw_inode(cstruct.CStruct):
             self.data = '\x00' * self.dsize
             stat_compr_zero += 1
         elif self.compr == JFFS2_COMPR_ZLIB:
-            self.data = zlib.decompress(node_data)
-            stat_compr_zlib += 1
+    	    try:
+    		    self.data = zlib.decompress(node_data)
+    		    stat_compr_zlib += 1
+    	    except Exception:
+    		    pass
+    		    self.data = ''
+    		    stat_compr_error += 1
         elif self.compr == JFFS2_COMPR_RTIME:
-            self.data = rtime.decompress(node_data, self.dsize)
-            stat_compr_rtime += 1
+    	    try:
+    		    self.data = rtime.decompress(node_data, self.dsize)
+    		    stat_compr_rtime += 1
+    	    except Exception:
+    		    pass
+    		    self.data = ''
+    		    stat_compr_error += 1
         elif self.compr == JFFS2_COMPR_LZMA:
-            self.data = jffs2_lzma.decompress(node_data, self.dsize)
-            stat_compr_lzma += 1
+    	    try:
+    		    self.data = jffs2_lzma.decompress(node_data, self.dsize)
+    		    stat_compr_lzma += 1
+    	    except Exception:
+    		    pass
+    		    self.data = ''
+    		    stat_compr_error += 1
         elif self.compr == JFFS2_COMPR_LZO:
-            self.data = lzo.decompress(node_data, False, self.dsize)
-            stat_compr_lzo += 1
+    	    try:
+    		    self.data = lzo.decompress(node_data, False, self.dsize)
+    		    stat_compr_lzo += 1
+    	    except Exception:
+    		    pass
+    		    self.data = ''
+    		    stat_compr_error += 1
         else:
             print('compression not implemented', self)
             print(node_data.encode('hex')[:20])
@@ -556,6 +578,7 @@ def main():
         print ('COMPR_LZMA:     ' + str(stat_compr_lzma))
         print ('COMPR_LZO:      ' + str(stat_compr_lzo))
         print ('COMPR_NOTIMPL:  ' + str(stat_compr_notimpl))
+        print ('Decompress fail:' + str(stat_compr_error))
         print ('Length mismatch:' + str(stat_mismatch_len))
         print ('HDR CRC error:  ' + str(stat_mismatch_hdrcrc))
         print ('DATA CRC error: ' + str(stat_mismatch_datacrc))
